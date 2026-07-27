@@ -65,10 +65,11 @@ Release output: `bin/Release/net6.0/gregMod.MoreModules.dll`
 
 ```
 gregMod.MoreModules/
-├── Core.cs                 # MelonLoader entry point and shop integration
-├── ModuleDefinition.cs     # Custom module definitions
-├── ModuleRegistry.cs       # Runtime prefab registry
-├── Patches.cs              # Game Harmony patches
+├── src/
+│   ├── Core.cs             # MelonLoader entry point and shop integration
+│   ├── ModuleDefinition.cs # Custom module definitions
+│   ├── ModuleRegistry.cs   # Runtime prefab registry
+│   └── Patches.cs          # Game Harmony patches
 ├── references/             # Current game and MelonLoader assemblies
 ├── gregMod.MoreModules.csproj
 └── README.md

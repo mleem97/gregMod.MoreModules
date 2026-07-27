@@ -92,7 +92,7 @@ namespace GregModMoreModules
             // Create/recreate the inactive holder that hides templates from the world system.
             if (TemplateHolder != null)
                 Object.Destroy(TemplateHolder);
-            TemplateHolder = new GameObject("MoreSFP_TemplateHolder");
+            TemplateHolder = new GameObject("gregModMoreModules_TemplateHolder");
             TemplateHolder.SetActive(false);
             Object.DontDestroyOnLoad(TemplateHolder);
 
@@ -383,7 +383,7 @@ namespace GregModMoreModules
 
             for (int rowIndex = 0; rowIndex < rowCount; rowIndex++)
             {
-                string rowName = $"HL FasterQSFP {rowIndex + 1}";
+                string rowName = $"HL gregMod.MoreModules {rowIndex + 1}";
                 var existing = shopRoot.transform.Find(rowName);
                 GameObject row = existing != null ? existing.gameObject : null;
 
