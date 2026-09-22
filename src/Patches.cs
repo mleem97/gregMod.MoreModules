@@ -55,8 +55,7 @@ namespace GregModMoreModules
                                    PlayerManager.ObjectInHand itemType, string displayName,
                                    bool isCustomColor)
         {
-            if ((itemID >= Core.MOD_ID_BASE && itemID < Core.MOD_ID_BASE + ModuleList.All.Length) ||
-                (itemID >= Core.BULK_ID_BASE && itemID < Core.BULK_ID_BASE + ModuleList.All.Length))
+            if (Core.IsCustomItemID(itemID))
             {
                 int before = __instance.cartUIItems != null ? __instance.cartUIItems.Count : -1;
                 MelonLogger.Msg($"Buy clicked: itemID={itemID}, type={(int)itemType}, " +
@@ -77,13 +76,12 @@ namespace GregModMoreModules
                                                 PlayerManager.ObjectInHand itemType,
                                                 string displayName)
         {
-            var prefab = BuildCartPrefab(itemID, itemType);
-            if (prefab == null)
-            {
-                MelonLogger.Error($"No prefab for custom cart itemID={itemID}, type={(int)itemType}.");
-                return false;
-            }
-
+            // Kein manuelles SpawnPhysicalItem hier: ein solcher Add-Spawn wurde vom
+            // Spiel nicht uid-verknuepft, sodass der Checkout die Lieferbox separat
+            // frisch instanziiert und die Add-Box als zusaetzliche Box liegen bleibt
+            // (Triple-Spawn: Add-Box + Liefer-Box + aktiv geparkte Template).
+            // Die Lieferung holt sich ihren Prefab ueber ComputerShop.GetPrefabForItem
+            // (unser Prefix) und instanziiert genau EINE Box daraus.
             if (shop.shopCartItemPrefab == null || shop.parentForShopCartItems == null ||
                 shop.cartUIItems == null)
             {
@@ -91,20 +89,12 @@ namespace GregModMoreModules
                 return false;
             }
 
-            var spawnedUID = shop.SpawnPhysicalItem(prefab, price, itemType);
-            if (!spawnedUID.HasValue)
-            {
-                MelonLogger.Error($"SpawnPhysicalItem failed for custom itemID={itemID}.");
-                return false;
-            }
-
-            int uid = spawnedUID.Value;
             var existingCartItem = FindExistingCartItem(shop, itemID, itemType);
             if (existingCartItem != null)
             {
-                existingCartItem.AddSpawnedItem(uid);
+                shop.BuyAnotherItem(itemID, price, itemType, existingCartItem);
                 shop.UpdateCartTotal();
-                MelonLogger.Msg($"Custom cart quantity increased: itemID={itemID}, uid={uid}, " +
+                MelonLogger.Msg($"Custom cart quantity increased: itemID={itemID}, " +
                                 $"quantity={existingCartItem.Quantity}");
                 return true;
             }
@@ -115,18 +105,16 @@ namespace GregModMoreModules
             if (cartItem == null)
             {
                 Object.Destroy(cartObject);
-                shop.RemoveSpawnedItem(uid);
                 MelonLogger.Error("ShopCartItem component missing on cart prefab clone.");
                 return false;
             }
 
             var noCustomColor = new Il2CppSystem.Nullable<Color>();
-            cartItem.Initialize(shop, displayName, itemID, price, itemType, uid, noCustomColor);
+            cartItem.Initialize(shop, displayName, itemID, price, itemType, noCustomColor);
             shop.cartUIItems.Add(cartItem);
             shop.UpdateCartTotal();
 
-            MelonLogger.Msg($"Custom cart item created: itemID={itemID}, uid={uid}, " +
-                            $"quantity={cartItem.Quantity}");
+            MelonLogger.Msg($"Custom cart item created: itemID={itemID}, quantity={cartItem.Quantity}");
             return true;
         }
 
@@ -144,35 +132,20 @@ namespace GregModMoreModules
 
             return null;
         }
+    }
 
-        private static GameObject BuildCartPrefab(int itemID, PlayerManager.ObjectInHand itemType)
+    // =========================================================================
+    // Patch: ComputerShop.ButtonCheckOut (Prefix)
+    // Delivery happens at checkout — a fresh tray/bulk box is spawned minutes
+    // after the Buy-click (when the scanner may already have stopped). Restart
+    // the box scanner so the delivered box gets expanded to its tray capacity.
+    // =========================================================================
+    [HarmonyPatch(typeof(ComputerShop), nameof(ComputerShop.ButtonCheckOut))]
+    internal static class PatchButtonCheckOut
+    {
+        private static void Prefix(ComputerShop __instance)
         {
-            var mgm = MainGameManager.instance;
-            if (mgm == null) return null;
-
-            Transform templateParent = Core.TemplateHolder != null
-                ? Core.TemplateHolder.transform
-                : null;
-
-            if (itemID >= Core.BULK_ID_BASE &&
-                itemID < Core.BULK_ID_BASE + ModuleList.All.Length)
-            {
-                int regularID = itemID - Core.BULK_ID_BASE + Core.MOD_ID_BASE;
-                if (!ModuleRegistry.TryGet(regularID, out var bulkEntry)) return null;
-                if ((int)itemType != 9) return null;
-
-                MelonCoroutines.Start(Core.BulkUpgradeScanner());
-                return Core.BuildBulkBoxPrefab(mgm, itemID, bulkEntry, templateParent);
-            }
-
-            if (!ModuleRegistry.TryGet(itemID, out var entry)) return null;
-
-            if ((int)itemType == 9)
-                return Core.BuildBoxPrefab(mgm, itemID, entry, templateParent);
-            if ((int)itemType == 8)
-                return Core.BuildModulePrefab(mgm, itemID, entry, templateParent);
-
-            return null;
+            MelonCoroutines.Start(Core.ExpandAllSizedBoxes());
         }
     }
 
@@ -191,15 +164,35 @@ namespace GregModMoreModules
 
             // 32x bulk item: BULK_ID_BASE + i → return a box marked with "_bulk_"
             // in its name. The actual 32-slot expansion is done post-delivery by
-            // BulkUpgradeScanner (game re-initializes slots after instantiation).
+            // ExpandAllSizedBoxes (game re-initializes slots after instantiation).
+            // The returned template is parked under the inactive TemplateHolder so
+            // it never appears as an extra spawned box and the scanner skips it.
             if (itemID >= Core.BULK_ID_BASE && itemID < Core.BULK_ID_BASE + ModuleList.All.Length)
             {
                 int regularID = itemID - Core.BULK_ID_BASE + Core.MOD_ID_BASE;
                 if (ModuleRegistry.TryGet(regularID, out var bulkEntry) && (int)itemType == 9)
                 {
                     MelonLogger.Msg($"GetPrefabForItem custom bulk: itemID={itemID}, regularID={regularID}");
-                    __result = Core.BuildBulkBoxPrefab(mgm, itemID, bulkEntry);
-                    MelonCoroutines.Start(Core.BulkUpgradeScanner());
+                    __result = Core.BuildBulkBoxPrefab(mgm, itemID, bulkEntry,
+                                                       Core.TemplateHolder != null ? Core.TemplateHolder.transform : null);
+                    MelonCoroutines.Start(Core.ExpandAllSizedBoxes());
+                    return false;
+                }
+                return true;
+            }
+
+            // Tray-Pakete: TRAY_ID_BASE + moduleIndex * TraySizeCount + sizeIndex.
+            if (itemID >= Core.TRAY_ID_BASE &&
+                itemID < Core.TRAY_ID_BASE + ModuleList.All.Length * Core.TraySizeCount)
+            {
+                int regularID = Core.RegularIdForTray(itemID);
+                if (ModuleRegistry.TryGet(regularID, out var trayEntry) && (int)itemType == 9)
+                {
+                    MelonLogger.Msg($"GetPrefabForItem custom tray: itemID={itemID}, " +
+                                    $"{Core.TraySizeFromItemID(itemID)}x");
+                    __result = Core.BuildTrayBoxPrefab(mgm, itemID, trayEntry,
+                                                       Core.TemplateHolder != null ? Core.TemplateHolder.transform : null);
+                    MelonCoroutines.Start(Core.ExpandAllSizedBoxes());
                     return false;
                 }
                 return true;
