@@ -18,16 +18,20 @@ namespace GregModMoreModules
             /// <summary>prefabID of the vanilla base module used as clone source.</summary>
             internal readonly int BasePrefabID;
 
+            /// <summary>Index into mgm.sfpsBoxedPrefab for the matching vanilla box.</summary>
+            internal readonly int BaseBoxIndex;
+
             /// <summary>Number of modules inside the box (5 = standard, 32 = large box).</summary>
             internal readonly int ModuleCount;
 
             internal Entry(float speedInternal, int moduleSfpType, int boxSfpType, int basePrefabID,
-                           int moduleCount = 5)
+                           int moduleCount = 5, int baseBoxIndex = -1)
             {
                 SpeedInternal = speedInternal;
                 ModuleSfpType = moduleSfpType;
                 BoxSfpType    = boxSfpType;
                 BasePrefabID  = basePrefabID;
+                BaseBoxIndex  = baseBoxIndex;
                 ModuleCount   = moduleCount;
             }
         }

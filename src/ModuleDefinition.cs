@@ -31,6 +31,18 @@ namespace GregModMoreModules
 
         /// <summary>Optional color for the module's box and cable in the game. If not set, it will use the default QSFP+ colors.</summary>
         public Color ModuleColor;
+
+        /// <summary>
+        /// Vanilla module prefabID to clone (form factor): 0 = RJ45, 1 = SFP+,
+        /// 2 = SFP28, 3 = QSFP+. Determines sfpType (port compatibility) and model.
+        /// </summary>
+        public int BasePrefabID = 3;
+
+        /// <summary>Index into mgm.sfpsBoxedPrefab for the matching vanilla box.</summary>
+        public int BaseBoxIndex = 3;
+
+        /// <summary>Connection word for the shop label ("Fiber", "Copper").</summary>
+        public string ConnectionLabel = "Fiber";
         
         // Internal helper — used by Core.cs
         internal float InternalSpeed => SpeedGbps / 5f;
@@ -108,6 +120,43 @@ namespace GregModMoreModules
                 XpToUnlock      = 0,
                 ShopGuid        = "more_sfp_qsfp_dwdm_6400g_v1",
                 ModuleColor     = new Color(0f, 0.9f, 0.9f, 1f),
+            },
+
+            new ModuleDefinition
+            {
+                DisplayName     = "RJ45 10Gbps",
+                SpeedGbps       = 10f,
+                PriceMultiplier = 1f,
+                XpToUnlock      = 0,
+                ShopGuid        = "more_sfp_rj45_10g_v1",
+                ModuleColor     = new Color(0.72f, 0.45f, 0.2f, 1f),
+                BasePrefabID    = 0,
+                BaseBoxIndex    = 0,
+                ConnectionLabel = "Copper",
+            },
+
+            new ModuleDefinition
+            {
+                DisplayName     = "SFP+ 10Gbps",
+                SpeedGbps       = 10f,
+                PriceMultiplier = 1.2f,
+                XpToUnlock      = 0,
+                ShopGuid        = "more_sfp_sfpplus_10g_v1",
+                ModuleColor     = new Color(0.2f, 0.5f, 0.9f, 1f),
+                BasePrefabID    = 1,
+                BaseBoxIndex    = 1,
+            },
+
+            new ModuleDefinition
+            {
+                DisplayName     = "SFP28 25Gbps",
+                SpeedGbps       = 25f,
+                PriceMultiplier = 1.5f,
+                XpToUnlock      = 0,
+                ShopGuid        = "more_sfp_sfp28_25g_v1",
+                ModuleColor     = new Color(0.1f, 0.8f, 0.7f, 1f),
+                BasePrefabID    = 2,
+                BaseBoxIndex    = 2,
             },
         };
     }

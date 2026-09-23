@@ -1,5 +1,16 @@
 # Changelog
 
+## v1.0.18
+
+- **Fixed wrong shop prefabs / icons:** base-module detection only accepts
+  vanilla `SFP_*` names (log had picked a pre-existing `CustomSFP_*` entry as
+  “highest speed” → `sfpType=0` RJ45 and `Shop template: itemID=0`). Shop
+  template now matches the Fibre 40G box `itemID` / highest box ID, not the
+  module prefabID.
+- **Fixed delivered box clone source:** `BuildBoxPrefab` uses a dedicated
+  `BaseBoxPrefabIndex` (vanilla box array) instead of `BasePrefabID` (module
+  ID space — out of range → fallback to RJ45 box).
+
 ## v1.0.17
 
 - Diagnostic build (no behavior change): the full vanilla SFP module and SFP

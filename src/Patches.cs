@@ -254,12 +254,38 @@ namespace GregModMoreModules
 
     // =========================================================================
     // Patch: CableLink.InsertSFP (Prefix)
-    // Child modules taken from a custom box retain the vanilla QSFP+ prefabID
-    // (3) because setting prefabID on active child GameObjects causes the world
-    // tracker to spawn infinite loose modules. Instead we fix it here — at the
-    // exact moment the module is inserted into a port — so the save stores the
-    // correct custom prefabID and load can restore the right module.
+    // Child modules taken from a custom box retain the vanilla base prefabID
+    // (e.g. 3 for QSFP+ clones) because setting prefabID on active child
+    // GameObjects causes the world tracker to spawn infinite loose modules.
+    // Instead we fix it here — at the exact moment the module is inserted
+    // into a port — so the save stores the correct custom prefabID and load
+    // can restore the right module.
+    //
+    // Match by speed AND vanilla base prefabID, plus a tag for ambiguous
+    // speeds: RJ45 and SFP+ share internal speed 2 (vanilla twins), so a
+    // speed-only match would rewrite plain vanilla modules to custom IDs
+    // (coupling their saves to this mod). Ambiguous speeds only rewrite
+    // modules provably taken from a custom box (tagged in
+    // PatchTakeSFPFromBox); unique speeds (100G+) keep the legacy match.
     // =========================================================================
+    internal static class CustomModuleTags
+    {
+        internal static readonly System.Collections.Generic.HashSet<int> TakenModuleIds = new();
+    }
+
+    [HarmonyPatch(typeof(SFPBox), nameof(SFPBox.TakeSFPFromBox))]
+    internal static class PatchTakeSFPFromBox
+    {
+        private static void Postfix(SFPBox __instance, SFPModule __result)
+        {
+            if (__instance == null || __result == null) return;
+            int boxType = -1;
+            try { boxType = __instance.sfpBoxType; } catch { return; }
+            if (!ModuleRegistry.TryGet(boxType, out _)) return;
+            try { CustomModuleTags.TakenModuleIds.Add(__result.GetInstanceID()); } catch { }
+        }
+    }
+
     [HarmonyPatch(typeof(CableLink), nameof(CableLink.InsertSFP))]
     internal static class PatchCableLinkInsertSFP
     {
@@ -268,14 +294,28 @@ namespace GregModMoreModules
             var usableObj = module?.GetComponent<UsableObject>();
             if (usableObj == null) return;
 
+            int currentPrefabID = -1;
+            try { currentPrefabID = usableObj.prefabID; } catch { return; }
+
+            int moduleInstanceId = -1;
+            try { moduleInstanceId = module.GetInstanceID(); } catch { }
+
+            int speedUsers = 0;
+            foreach (var (_, other) in ModuleRegistry.Entries)
+            {
+                if (Mathf.Approximately(speed, other.SpeedInternal)) speedUsers++;
+            }
+
+            bool tagged = moduleInstanceId >= 0 && CustomModuleTags.TakenModuleIds.Contains(moduleInstanceId);
+
             foreach (var (prefabID, entry) in ModuleRegistry.Entries)
             {
-                if (Mathf.Approximately(speed, entry.SpeedInternal) &&
-                    usableObj.prefabID != prefabID)
-                {
-                    usableObj.prefabID = prefabID;
-                    break;
-                }
+                if (!Mathf.Approximately(speed, entry.SpeedInternal)) continue;
+                if (currentPrefabID != entry.BasePrefabID || currentPrefabID == prefabID) continue;
+                if (speedUsers > 1 && !tagged) continue;
+                usableObj.prefabID = prefabID;
+                try { CustomModuleTags.TakenModuleIds.Remove(moduleInstanceId); } catch { }
+                break;
             }
         }
     }
