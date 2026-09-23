@@ -48,6 +48,44 @@ namespace GregModMoreModules
         internal static GameObject TemplateHolder { get; private set; }
         private static readonly Dictionary<int, int> ExtendedShopRowsByParent = new Dictionary<int, int>();
 
+        // True when gregMod.RealisticModules is loaded: the successor owns the
+        // module catalog (same ID ranges, plus breakout/validation features),
+        // so this mod stays inert and every tier appears exactly once.
+        // Same pattern as MoreServers yielding to MoreModules.
+        internal static bool s_disabledBySibling;
+
+        /// <summary>
+        /// Returns true when the successor mod is loaded, in which case this
+        /// mod must not register anything. Runs at MainGameManager.Awake,
+        /// by which time all MelonMods are registered.
+        /// </summary>
+        private static bool DetectSiblingConflict()
+        {
+            if (s_disabledBySibling)
+                return true;
+            try
+            {
+                foreach (var mod in MelonLoader.MelonMod.RegisteredMelons)
+                {
+                    if (mod?.Info == null || mod.Info.SystemType?.Assembly == typeof(Core).Assembly)
+                        continue;
+                    if (mod.Info.Name == "gregMod.RealisticModules")
+                    {
+                        s_disabledBySibling = true;
+                        MelonLogger.Error("[MoreModules] gregMod.RealisticModules is loaded — " +
+                            "disabling MoreModules to avoid double module handling. " +
+                            "Install only one of the two.");
+                        return true;
+                    }
+                }
+            }
+            catch (System.Exception ex)
+            {
+                MelonLogger.Warning($"[MoreModules] Sibling check failed: {ex.Message}");
+            }
+            return false;
+        }
+
         // -----------------------------------------------------------------------
         // Diagnostic: dumps the full vanilla SFP module and SFP box prefab
         // catalogs so we can map each custom speed tier to its real vanilla
@@ -111,6 +149,12 @@ namespace GregModMoreModules
         // -----------------------------------------------------------------------
         internal static void SetupRegistry(MainGameManager mgm)
         {
+            // Mutual exclusion: gregMod.RealisticModules owns the module
+            // catalog. If it is loaded, stay inert so tiers/buttons/prefabs
+            // are registered exactly once (no doubles in the shop).
+            if (DetectSiblingConflict())
+                return;
+
             ModuleRegistry.Clear();
             BaseQsfpPrefabID = -1;
             BaseQsfpSfpType = -1;
@@ -434,6 +478,7 @@ namespace GregModMoreModules
             // das Flag zuruecksetzen, damit kuenftige Lieferungen wieder expandieren.
             _boxScannerRunning = false;
 
+            if (s_disabledBySibling) return;
             if (buildIndex != 0)
                 MelonCoroutines.Start(AddShopItems());
         }

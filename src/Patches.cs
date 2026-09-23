@@ -16,6 +16,7 @@ namespace GregModMoreModules
     {
         private static void Postfix(MainGameManager __instance)
         {
+            if (Core.s_disabledBySibling) return;
             MelonLogger.Msg("MainGameManager.Awake → setting up registry.");
             Core.SetupRegistry(__instance);
         }
@@ -31,6 +32,7 @@ namespace GregModMoreModules
     {
         private static void Postfix(MainGameManager __instance)
         {
+            if (Core.s_disabledBySibling) return;
             var arr = __instance.sfpPrefabs;
             int len = arr?.Length ?? 0;
 
@@ -55,6 +57,7 @@ namespace GregModMoreModules
                                    PlayerManager.ObjectInHand itemType, string displayName,
                                    bool isCustomColor)
         {
+            if (Core.s_disabledBySibling) return true;
             if (Core.IsCustomItemID(itemID))
             {
                 int before = __instance.cartUIItems != null ? __instance.cartUIItems.Count : -1;
@@ -145,6 +148,7 @@ namespace GregModMoreModules
     {
         private static void Prefix(ComputerShop __instance)
         {
+            if (Core.s_disabledBySibling) return;
             MelonCoroutines.Start(Core.ExpandAllSizedBoxes());
         }
     }
@@ -159,6 +163,7 @@ namespace GregModMoreModules
     {
         private static bool Prefix(int itemID, PlayerManager.ObjectInHand itemType, ref GameObject __result)
         {
+            if (Core.s_disabledBySibling) return true;
             var mgm = MainGameManager.instance;
             if (mgm == null) return true;
 
@@ -230,6 +235,7 @@ namespace GregModMoreModules
     {
         private static void Prefix()
         {
+            if (Core.s_disabledBySibling) return;
             var mgm = MainGameManager.instance;
             if (mgm == null) return;
 
@@ -278,6 +284,7 @@ namespace GregModMoreModules
     {
         private static void Postfix(SFPBox __instance, SFPModule __result)
         {
+            if (Core.s_disabledBySibling) return;
             if (__instance == null || __result == null) return;
             int boxType = -1;
             try { boxType = __instance.sfpBoxType; } catch { return; }
@@ -291,6 +298,7 @@ namespace GregModMoreModules
     {
         private static void Prefix(float speed, SFPModule module)
         {
+            if (Core.s_disabledBySibling) return;
             var usableObj = module?.GetComponent<UsableObject>();
             if (usableObj == null) return;
 
@@ -331,6 +339,7 @@ namespace GregModMoreModules
     {
         private static bool Prefix(SFPBox __instance, int sfpType, ref bool __result)
         {
+            if (Core.s_disabledBySibling) return true;
             int boxType = __instance.sfpBoxType;
             if (!ModuleRegistry.TryGet(boxType, out var entry)) return true;
 
