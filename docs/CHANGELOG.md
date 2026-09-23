@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.0.19
+
+- **Sibling detection respects RealisticModules' `Enabled` switch:** MoreModules
+  only yields when gregMod.RealisticModules is loaded *and* active. If the
+  user turns RealisticModules off (F1 / MelonPreferences), MoreModules stays
+  active so the shop catalog is not empty when both DLLs are installed.
+
 ## v1.0.18
 
 - **Fixed wrong shop prefabs / icons:** base-module detection only accepts

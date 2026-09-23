@@ -6,7 +6,7 @@ using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 
-[assembly: MelonInfo(typeof(GregModMoreModules.Core), "gregMod.MoreModules", "1.0.18", "TeamGreg Modding (leoms1408 / mleem97)")]
+[assembly: MelonInfo(typeof(GregModMoreModules.Core), "gregMod.MoreModules", "1.0.19", "TeamGreg Modding (leoms1408 / mleem97)")]
 [assembly: MelonGame("Waseku", "Data Center")]
 
 namespace GregModMoreModules
@@ -71,10 +71,29 @@ namespace GregModMoreModules
                         continue;
                     if (mod.Info.Name == "gregMod.RealisticModules")
                     {
+                        // Only yield when the successor is actually active.
+                        // If the user turned RealisticModules off via F1, keep
+                        // MoreModules running so the catalog is not empty.
+                        bool successorActive = true;
+                        try
+                        {
+                            var cat = MelonPreferences.GetCategory("gregMod.RealisticModules");
+                            var entry = cat?.GetEntry<bool>("Enabled");
+                            if (entry != null) successorActive = entry.Value;
+                        }
+                        catch { /* missing entry → assume active */ }
+
+                        if (!successorActive)
+                        {
+                            MelonLogger.Msg("[MoreModules] gregMod.RealisticModules present but " +
+                                "disabled — MoreModules stays active.");
+                            continue;
+                        }
+
                         s_disabledBySibling = true;
-                        MelonLogger.Error("[MoreModules] gregMod.RealisticModules is loaded — " +
+                        MelonLogger.Error("[MoreModules] gregMod.RealisticModules is active — " +
                             "disabling MoreModules to avoid double module handling. " +
-                            "Install only one of the two.");
+                            "Install only one of the two, or disable RealisticModules in F1.");
                         return true;
                     }
                 }
@@ -814,7 +833,7 @@ namespace GregModMoreModules
                 MelonLogger.Msg("Added Backplane shop top padding for clipped SystemX server row.");
             }
 
-            float height = Mathf.Max(160f, itemHeight * 0.7f);
+            float height = 12f;
 
             spacer.transform.SetSiblingIndex(0);
             spacer.SetActive(true);

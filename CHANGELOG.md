@@ -4,6 +4,10 @@ Format: [Keep a Changelog](https://keepachangelog.com/de/1.0.0/). Version: siehe
 
 ## [Unreleased]
 
+### Changed
+
+- Sibling-Erkennung weicht gregMod.RealisticModules nur noch bei dessen `Enabled=true` aus (v1.0.19).
+
 ### Added
 
 - RJ45 10Gbps, SFP+ 10Gbps, SFP28 25Gbps als Shop-Pakete (5x + Trays, eigene Prefabs/Boxen/Preise/Sprites je Formfaktor).
