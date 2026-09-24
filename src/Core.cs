@@ -38,7 +38,7 @@ namespace GregModMoreModules
         internal const int BULK_ID_BASE = 2000;
         internal const int TRAY_ID_BASE = 3000;
 
-        // Stückzahlen ("Trays") pro Modul — zusätzlich zur 5x-Box.
+        // Piece counts ("trays") per module — in addition to the 5x box.
         internal const int TraySizeCount = 4;
         internal static readonly int[] TraySizes = { 16, 36, 64, 128 };
 
@@ -588,7 +588,7 @@ namespace GregModMoreModules
                 if (added5 != null) addedSfpCount++;
                 packageIndex++;
 
-                // Tray-Pakete 16 / 36 / 64 / 128 Stück — zusätzlich zur 5x-Box.
+                // Tray packs 16 / 36 / 64 / 128 pieces — in addition to the 5x box.
                 for (int s = 0; s < TraySizeCount; s++)
                 {
                     int cap         = TraySizes[s];
@@ -970,7 +970,7 @@ namespace GregModMoreModules
                 RegisterShopItem(computerShop, shopItem);
             cloned.SetActive(true);
 
-            MelonLogger.Msg($"Shop-Paket hinzugefügt: '{newSO.itemName}' " +
+            MelonLogger.Msg($"Shop pack added: '{newSO.itemName}' " +
                             $"(prefabID={prefabID}, price={newSO.price}, parent={parent.name})");
             return cloned;
         }
@@ -1023,7 +1023,7 @@ namespace GregModMoreModules
         }
 
         // -----------------------------------------------------------------------
-        // Tray-Pakete (16/36/64/128 Stück). ID-Layout: TRAY_ID_BASE +
+        // Tray packs (16/36/64/128 pieces). ID layout: TRAY_ID_BASE +
         // moduleIndex * TraySizeCount + sizeIndex. Capacity steht im Namen —
         // genau wie beim 32x-Bulk wird erst nach der Lieferung expandiert.
         // -----------------------------------------------------------------------
