@@ -1,37 +1,37 @@
 # Changelog — gregMod.MoreModules
 
-Format: [Keep a Changelog](https://keepachangelog.com/de/1.0.0/). Version: siehe [`VERSION`](VERSION).
+Format: [Keep a Changelog](https://keepachangelog.com/de/1.0.0/). Version: see [`VERSION`](VERSION).
 
 ## [Unreleased]
 
 ### Changed
 
-- Sibling-Erkennung weicht gregMod.RealisticModules nur noch bei dessen `Enabled=true` aus (v1.0.19).
+- Sibling detection now only yields to gregMod.RealisticModules when its `Enabled=true` (v1.0.19).
 
 ### Added
 
-- RJ45 10Gbps, SFP+ 10Gbps, SFP28 25Gbps als Shop-Pakete (5x + Trays, eigene Prefabs/Boxen/Preise/Sprites je Formfaktor).
-- Einheitliches Open-Source-Layout (README, Docs, Badges) nach gregCore-Vorbild.
+- RJ45 10Gbps, SFP+ 10Gbps, SFP28 25Gbps as shop packages (5x + trays, dedicated prefabs/boxes/prices/sprites per form factor).
+- Unified open-source layout (README, docs, badges) following the gregCore template.
 
 ### Fixed
 
-- InsertSFP-Umschreibung nur noch bei getaggten Box-Modulen oder eindeutigem Speed (schützt Vanilla-RJ45/SFP+/SFP28-Saves).
+- InsertSFP rewrite only for tagged box modules or unambiguous speed (protects vanilla RJ45/SFP+/SFP28 saves).
 
 ## [1.0.18] — 2026-09-23
 
 ### Fixed
 
-- **Falsche Shop-Prefabs/Icons:** Base-Modul-Erkennung akzeptiert nur Vanilla-`SFP_*`-Namen (vorher wurde `CustomSFP_*` als „höchste Geschwindigkeit" gewählt → `sfpType=0` RJ45, `Shop template: itemID=0`). Shop-Template matched jetzt die Fibre-40G-Box (`itemID` / höchste Box-ID), nicht die Modul-prefabID.
-- **Falsche Liefer-Box:** `BuildBoxPrefab` nutzt `BaseBoxPrefabIndex` (Vanilla-Box-Array) statt `BasePrefabID` (Modul-ID-Raum — Out-of-Range → Fallback RJ45-Box).
+- **Wrong shop prefabs/icons:** base-module detection only accepts vanilla `SFP_*` names (previously `CustomSFP_*` was picked as "highest speed" → `sfpType=0` RJ45, `Shop template: itemID=0`). Shop template now matches the Fibre 40G box (`itemID` / highest box ID), not the module prefabID.
+- **Wrong delivery box:** `BuildBoxPrefab` uses `BaseBoxPrefabIndex` (vanilla box array) instead of `BasePrefabID` (module ID space — out of range → fallback RJ45 box).
 
 ## [1.0.17] — 2026-09-23
 
-- Tray-Dreispawn-Fix, Scanner-Fixes (siehe `docs/CHANGELOG.md`).
+- Tray triple-spawn fix, scanner fixes (see `docs/CHANGELOG.md`).
 
 ## [1.0.16] — 2026-09-22
 
-- Tray-Dreispawn-Fix.
+- Tray triple-spawn fix.
 
 ## [0.1.0] — 2026-09-22
 
-- Initialer standardisierter Stand.
+- Initial standardized baseline.
