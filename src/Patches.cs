@@ -79,12 +79,12 @@ namespace GregModMoreModules
                                                 PlayerManager.ObjectInHand itemType,
                                                 string displayName)
         {
-            // Kein manuelles SpawnPhysicalItem hier: ein solcher Add-Spawn wurde vom
-            // Spiel nicht uid-verknuepft, sodass der Checkout die Lieferbox separat
-            // frisch instanziiert und die Add-Box als zusaetzliche Box liegen bleibt
-            // (Triple-Spawn: Add-Box + Liefer-Box + aktiv geparkte Template).
-            // Die Lieferung holt sich ihren Prefab ueber ComputerShop.GetPrefabForItem
-            // (unser Prefix) und instanziiert genau EINE Box daraus.
+            // No manual SpawnPhysicalItem here: such an add-spawn was not
+            // uid-linked by game, so checkout would instantiate the delivery box
+            // separately fresh and the add box stays behind as extra box
+            // (triple spawn: add box + delivery box + actively parked template).
+            // Delivery fetches its prefab via ComputerShop.GetPrefabForItem
+            // (our prefix) and instantiates exactly ONE box from it.
             if (shop.shopCartItemPrefab == null || shop.parentForShopCartItems == null ||
                 shop.cartUIItems == null)
             {
@@ -186,7 +186,7 @@ namespace GregModMoreModules
                 return true;
             }
 
-            // Tray-Pakete: TRAY_ID_BASE + moduleIndex * TraySizeCount + sizeIndex.
+            // Tray packs: TRAY_ID_BASE + moduleIndex * TraySizeCount + sizeIndex.
             if (itemID >= Core.TRAY_ID_BASE &&
                 itemID < Core.TRAY_ID_BASE + ModuleList.All.Length * Core.TraySizeCount)
             {

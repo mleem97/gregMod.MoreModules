@@ -38,7 +38,7 @@ namespace GregModMoreModules
         internal const int BULK_ID_BASE = 2000;
         internal const int TRAY_ID_BASE = 3000;
 
-        // Stückzahlen ("Trays") pro Modul — zusätzlich zur 5x-Box.
+        // Piece counts ("trays") per module — in addition to 5x box.
         internal const int TraySizeCount = 4;
         internal static readonly int[] TraySizes = { 16, 36, 64, 128 };
 
@@ -493,8 +493,8 @@ namespace GregModMoreModules
         // -----------------------------------------------------------------------
         public override void OnSceneWasLoaded(int buildIndex, string sceneName)
         {
-            // Ein laufender Kasten-Scan wird beim Scene-Wechsel abgebrochen;
-            // das Flag zuruecksetzen, damit kuenftige Lieferungen wieder expandieren.
+            // A running box scan is cancelled on scene change;
+            // reset flag so future deliveries expand again.
             _boxScannerRunning = false;
 
             if (s_disabledBySibling) return;
@@ -548,7 +548,7 @@ namespace GregModMoreModules
                 ? sourceItem.transform.parent.gameObject
                 : shopRoot;
 
-            // Ziel-Zeilenzahl: 1 x 5er-Paket + 4 Tray-Pakete (16/36/64/128) pro Modul.
+            // Target row count: 1 x 5-pack + 4 tray packs (16/36/64/128) per module.
             int packagesPerModule = 1 + TraySizeCount;
             var customRows = EnsureCustomSfpRows(shopRoot, sfpParent,
                                                  ModuleList.All.Length * packagesPerModule);
@@ -563,7 +563,7 @@ namespace GregModMoreModules
             int addedSfpCount = 0;
             int packageIndex  = 0;
 
-            // Template/Preis/Sprite je Formfaktor (Box-Index) — gecacht.
+            // Template/price/sprite per form factor (box index) — cached.
             var formTemplates = new Dictionary<int, ShopItem>();
 
             for (int i = 0; i < ModuleList.All.Length; i++)
@@ -578,7 +578,7 @@ namespace GregModMoreModules
                     : sourceItem.shopItemSO.price;
                 Sprite formSprite = ResolveFormSprite(formTemplate);
 
-                // 5x-Paket (Standard, bisheriges Verhalten).
+                // 5x pack (standard, previous behavior).
                 var added5 = AddShopPackage(computerShop, formTemplate ?? sourceItem,
                                             RowForPackage(customRows, sfpParent, packageIndex),
                                             prefabID,
@@ -588,7 +588,7 @@ namespace GregModMoreModules
                 if (added5 != null) addedSfpCount++;
                 packageIndex++;
 
-                // Tray-Pakete 16 / 36 / 64 / 128 Stück — zusätzlich zur 5x-Box.
+                // Tray packs 16 / 36 / 64 / 128 pcs — in addition to 5x box.
                 for (int s = 0; s < TraySizeCount; s++)
                 {
                     int cap         = TraySizes[s];
@@ -736,7 +736,7 @@ namespace GregModMoreModules
             }
         }
 
-        // Zeile fuer den naechsten Shop-Eintrag (4 Eintraege pro Zeile).
+        // Row for next shop entry (4 entries per row).
         private static GameObject RowForPackage(System.Collections.Generic.List<GameObject> customRows,
                                                 GameObject fallback, int packageIndex)
         {
@@ -756,8 +756,8 @@ namespace GregModMoreModules
             return $"{quantity} {moduleName} Module {conn} {speed}";
         }
 
-        // Shop-Template je Box-Formfaktor (gecacht): ShopItem dessen itemID dem
-        // Box-Index entspricht (0=RJ45 … 3=40G). Fallback: QSFP+-Template.
+        // Shop template per box form factor (cached): ShopItem whose itemID matches
+        // box index (0=RJ45 … 3=40G). Fallback: QSFP+ template.
         private static ShopItem FormShopTemplate(ComputerShop computerShop, ShopItem fallback,
                                                  Dictionary<int, ShopItem> cache, int boxIndex)
         {
@@ -970,7 +970,7 @@ namespace GregModMoreModules
                 RegisterShopItem(computerShop, shopItem);
             cloned.SetActive(true);
 
-            MelonLogger.Msg($"Shop-Paket hinzugefügt: '{newSO.itemName}' " +
+            MelonLogger.Msg($"Shop pack added: '{newSO.itemName}' " +
                             $"(prefabID={prefabID}, price={newSO.price}, parent={parent.name})");
             return cloned;
         }
@@ -1023,9 +1023,9 @@ namespace GregModMoreModules
         }
 
         // -----------------------------------------------------------------------
-        // Tray-Pakete (16/36/64/128 Stück). ID-Layout: TRAY_ID_BASE +
-        // moduleIndex * TraySizeCount + sizeIndex. Capacity steht im Namen —
-        // genau wie beim 32x-Bulk wird erst nach der Lieferung expandiert.
+        // Tray packs (16/36/64/128 pcs). ID layout: TRAY_ID_BASE +
+        // moduleIndex * TraySizeCount + sizeIndex. Capacity in name —
+        // like 32x bulk, expansion happens post-delivery.
         // -----------------------------------------------------------------------
         internal static bool IsCustomItemID(int itemID)
         {
@@ -1081,7 +1081,7 @@ namespace GregModMoreModules
         // that haven't been expanded yet. Runs until no more un-upgraded boxes
         // remain. Capacity comes from the box name:
         //   "_bulk_"                          → 32 (legacy 32x bulk)
-        //   "SFPBox_tray_<regularID>_<Kapa>"  → that capacity (16/36/64/128)
+        //   "SFPBox_tray_<regularID>_<cap>"  → that capacity (16/36/64/128)
         // -----------------------------------------------------------------------
         private static bool _boxScannerRunning;
 
@@ -1090,11 +1090,11 @@ namespace GregModMoreModules
             if (_boxScannerRunning) yield break;
             _boxScannerRunning = true;
 
-            // Der Scanner darf nicht gleich aufgeben, sobald gerade kein
-            // nicht-expandierter Kasten sichtbar ist: Die Lieferung (Checkout)
-            // kann erst Sekunden spaeter eine frische Tray-Box spawnen. Deshalb
-            // wird fuer ein laengeres Zeitfenster gepollt statt nach dem ersten
-            // leeren Durchlauf abzubrechen.
+            // Scanner must not give up as soon as no
+            // unexpanded box is visible: delivery (checkout)
+            // may spawn a fresh tray box seconds later. So
+            // poll for a longer window instead of cancelling
+            // after the first empty pass.
             float deadline = Time.time + 90f;
             int emptyPasses = 0;
 
@@ -1119,8 +1119,8 @@ namespace GregModMoreModules
                 if (foundAny) emptyPasses = 0;
                 else emptyPasses++;
 
-                // Nach ~8 leeren Durchlaeufen (≈ 12 s ohne neuen Kasten) koennen
-                // wir aufhoeren — ein naechster Start (Kauf/Checkout) reaktiviert.
+                // After ~8 empty passes (≈ 12 s with no new box) we can
+                // stop — next start (purchase/checkout) reactivates.
                 if (emptyPasses >= 8) break;
 
                 yield return new WaitForSeconds(1.5f);
@@ -1133,17 +1133,17 @@ namespace GregModMoreModules
         {
             if (string.IsNullOrEmpty(boxName)) return -1;
 
-            // Unity haengt beim Spawn " (Clone)" an den Objektnamen — fuer das
-            // Parsen der Kapazitaet wegwerfen.
+            // Unity appends " (Clone)" to object names on spawn — strip for
+            // capacity parsing.
             string name = boxName.Trim();
             const string cloneSuffix = "(Clone)";
             if (name.EndsWith(cloneSuffix, System.StringComparison.Ordinal))
                 name = name.Substring(0, name.Length - cloneSuffix.Length);
 
-            // Legacy-32x-Bulk-Paket.
+            // Legacy 32x bulk pack.
             if (name.IndexOf("_bulk_", System.StringComparison.Ordinal) >= 0) return 32;
 
-            // Tray-Pakete: "SFPBox_tray_<regularID>_<Kapa>".
+            // Tray packs: "SFPBox_tray_<regularID>_<cap>".
             int idx = name.IndexOf("_tray_", System.StringComparison.Ordinal);
             if (idx < 0) return -1;
             string tail = name.Substring(idx + "_tray_".Length);
