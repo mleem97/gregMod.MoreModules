@@ -6,7 +6,7 @@ using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 
-[assembly: MelonInfo(typeof(GregModMoreModules.Core), "gregMod.MoreModules", "1.0.19", "TeamGreg Modding (leoms1408 / mleem97)")]
+[assembly: MelonInfo(typeof(GregModMoreModules.Core), "gregMod.MoreModules", "1.0.20", "TeamGreg Modding (leoms1408 / mleem97)")]
 [assembly: MelonGame("Waseku", "Data Center")]
 
 namespace GregModMoreModules
