@@ -21,6 +21,19 @@ Format: [Keep a Changelog](https://keepachangelog.com/de/1.0.0/). Version: see [
 
 ### Fixed
 
+- Boxes/modules vanishing on relog: `sfpsBoxedPrefab` is now extended with
+  custom box templates alongside `sfpPrefabs`, and new
+  `GetSfpPrefab`/`GetSfpBoxPrefab` prefixes serve custom IDs on demand so
+  save/load can resolve boxType/prefabID 1000+. `EnsureRegistry` re-establishes
+  both arrays if the game resets them between Awake and load.
+- Loaded tray/bulk boxes regain their capacity: the expansion scan now also
+  runs after `LoadSFPsFromSave`, not just after purchase.
+- Stable save IDs: `ModuleDefinition.SaveId` (1000+) is persisted instead of
+  the array position — reordering the catalog can no longer silently remap
+  saves. Duplicates/invalid IDs are rejected with an error at setup.
+- Stale take-tags are cleared on scene change (Unity recycles instance IDs).
+- Sibling handling re-evaluates on every Awake instead of latching until
+  restart, so disabling RealisticModules mid-session restores the catalog.
 - InsertSFP rewrite only for tagged box modules or unambiguous speed (protects vanilla RJ45/SFP+/SFP28 saves).
 
 ## [1.0.18] — 2026-09-23

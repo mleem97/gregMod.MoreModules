@@ -24,6 +24,15 @@ See [docs/INDEX.md](docs/INDEX.md) for the complete documentation.
 | Windows x64 | Supported |
 | Linux x64 | Supported |
 
+### Save safety
+
+- Install **only one** of MoreModules / MoreServers / RealisticModules (overlapping ID ranges).
+- Keep the **same mod set between save and load** — saves containing custom
+  modules need this mod active with the same catalog to resolve them.
+- Do not disable the mod mid-save: objects saved while disabled cannot be
+  restored later (one-way loss).
+- Tray/bulk boxes regain their capacity automatically after load.
+
 ## Features
 
 - See [docs/INDEX.md](docs/INDEX.md) and [QUICKSTART.md](QUICKSTART.md)

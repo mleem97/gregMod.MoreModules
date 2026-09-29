@@ -29,6 +29,15 @@ namespace GregModMoreModules
         /// </summary>
         public string ShopGuid;
 
+        /// <summary>
+        /// Stable prefabID / sfpBoxType persisted in save games.
+        /// NEVER change once released, and NEVER reuse a retired ID:
+        /// saves store this number, so reordering ModuleList or reusing an ID
+        /// silently loads the wrong module. New modules append with an unused
+        /// ID above all existing ones (append-only catalog).
+        /// </summary>
+        public int SaveId = -1;
+
         /// <summary>Optional color for the module's box and cable in the game. If not set, it will use the default QSFP+ colors.</summary>
         public Color ModuleColor;
 
@@ -54,6 +63,7 @@ namespace GregModMoreModules
         {
             new ModuleDefinition
             {
+                SaveId          = 1000,
                 DisplayName     = "QSFP28 100Gbps",
                 SpeedGbps       = 100f,
                 PriceMultiplier = 2.5f,
@@ -64,6 +74,7 @@ namespace GregModMoreModules
             
             new ModuleDefinition
             {
+                SaveId          = 1001,
                 DisplayName     = "QSFP56 200Gbps",
                 SpeedGbps       = 200f,
                 PriceMultiplier = 4.5f,
@@ -74,6 +85,7 @@ namespace GregModMoreModules
             
             new ModuleDefinition
             {
+                SaveId          = 1002,
                 DisplayName     = "QSFP-DD 400Gbps",
                 SpeedGbps       = 400f,
                 PriceMultiplier = 6.5f,
@@ -84,6 +96,7 @@ namespace GregModMoreModules
             
             new ModuleDefinition
             {
+                SaveId          = 1003,
                 DisplayName     = "QSFP-DD 800Gbps",
                 SpeedGbps       = 800f,
                 PriceMultiplier = 9f,
@@ -94,6 +107,7 @@ namespace GregModMoreModules
             
             new ModuleDefinition
             {
+                SaveId          = 1004,
                 DisplayName     = "QSFP-DWDM 1600Gbps",
                 SpeedGbps       = 1600f,
                 PriceMultiplier = 16f,
@@ -104,6 +118,7 @@ namespace GregModMoreModules
 
             new ModuleDefinition
             {
+                SaveId          = 1005,
                 DisplayName     = "QSFP-DWDM 3200Gbps",
                 SpeedGbps       = 3200f,
                 PriceMultiplier = 28f,
@@ -114,6 +129,7 @@ namespace GregModMoreModules
             
             new ModuleDefinition
             {
+                SaveId          = 1006,
                 DisplayName     = "QSFP-DWDM 6400Gbps",
                 SpeedGbps       = 6400f,
                 PriceMultiplier = 48f,
@@ -124,6 +140,7 @@ namespace GregModMoreModules
 
             new ModuleDefinition
             {
+                SaveId          = 1007,
                 DisplayName     = "RJ45 10Gbps",
                 SpeedGbps       = 10f,
                 PriceMultiplier = 1f,
@@ -137,6 +154,7 @@ namespace GregModMoreModules
 
             new ModuleDefinition
             {
+                SaveId          = 1008,
                 DisplayName     = "SFP+ 10Gbps",
                 SpeedGbps       = 10f,
                 PriceMultiplier = 1.2f,
@@ -149,6 +167,7 @@ namespace GregModMoreModules
 
             new ModuleDefinition
             {
+                SaveId          = 1009,
                 DisplayName     = "SFP28 25Gbps",
                 SpeedGbps       = 25f,
                 PriceMultiplier = 1.5f,
