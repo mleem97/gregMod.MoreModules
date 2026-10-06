@@ -46,6 +46,19 @@ namespace GregModMoreModules
         // activeInHierarchy = false, so the game's UsableObject tracker ignores them.
         // Object.Instantiate still produces active clones from inactive-hierarchy objects.
         internal static GameObject TemplateHolder { get; private set; }
+
+        // Recreates TemplateHolder when it has gone Il2Cpp "fake-null" (native
+        // object collected while the C# wrapper still looks non-null) — this
+        // was silently aborting LoadSFPsFromSave's template-rebuild loop before
+        // every custom prefabID after the failing one, leaving load unable to
+        // find a template and causing the port's module to be ejected.
+        internal static Transform RecreateTemplateHolder()
+        {
+            TemplateHolder = new GameObject("gregModMoreModules_TemplateHolder");
+            TemplateHolder.SetActive(false);
+            Object.DontDestroyOnLoad(TemplateHolder);
+            return TemplateHolder.transform;
+        }
         private static readonly Dictionary<int, int> ExtendedShopRowsByParent = new Dictionary<int, int>();
 
         // True when gregMod.RealisticModules is loaded: the successor owns the
@@ -293,6 +306,37 @@ namespace GregModMoreModules
 
             mgm.sfpPrefabs = extended;
             MelonLogger.Msg($"sfpPrefabs extended: {sfpPrefabs.Length} → {extended.Length}");
+
+            ExtendBoxPrefabs(mgm);
+        }
+
+        // -----------------------------------------------------------------------
+        // A custom box is saved with sfpBoxType == its custom prefabID (e.g. 1006,
+        // confirmed in a parsed save). On load the game resolves the box prefab
+        // by that type in sfpsBoxedPrefab — which was never extended, so custom
+        // boxes silently failed to respawn. Mirror the sfpPrefabs extension:
+        // vanilla boxes at their indices, one parked template per custom ID.
+        // -----------------------------------------------------------------------
+        internal static void ExtendBoxPrefabs(MainGameManager mgm)
+        {
+            var boxes = mgm.sfpsBoxedPrefab;
+            if (boxes == null || boxes.Length == 0) return;
+            if (TemplateHolder == null) return;
+
+            var extended = new GameObject[MOD_ID_BASE + ModuleList.All.Length];
+            for (int i = 0; i < boxes.Length && i < MOD_ID_BASE; i++)
+                extended[i] = boxes[i];
+
+            foreach (var (id, entry) in ModuleRegistry.Entries)
+            {
+                if (id < 0 || id >= extended.Length) continue;
+                var template = BuildBoxPrefab(mgm, id, entry, TemplateHolder.transform);
+                if (template != null) template.name = $"SFPBox_template_{id}";
+                extended[id] = template;
+            }
+
+            mgm.sfpsBoxedPrefab = extended;
+            MelonLogger.Msg($"sfpsBoxedPrefab extended: {boxes.Length} → {extended.Length}");
         }
 
         // sfpType of the vanilla prefab with the definition's BasePrefabID
@@ -333,7 +377,7 @@ namespace GregModMoreModules
             int bestBoxType = -1;
             int lastNonNull = -1;
 
-            for (int i = 0; i < boxes.Length; i++)
+            for (int i = 0; i < boxes.Length && i < MOD_ID_BASE; i++)
             {
                 var go = boxes[i];
                 if (go == null) continue;
@@ -452,7 +496,7 @@ namespace GregModMoreModules
 
             // Fall back to the last non-null box (highest vanilla boxType).
             if (baseBox == null)
-                for (int i = boxPrefabs.Length - 1; i >= 0; i--)
+                for (int i = System.Math.Min(boxPrefabs.Length, MOD_ID_BASE) - 1; i >= 0; i--)
                     if (boxPrefabs[i] != null) { baseBox = boxPrefabs[i]; break; }
 
             if (baseBox == null)
